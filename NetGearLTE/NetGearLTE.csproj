@@ -14,7 +14,7 @@
     <PackageReference Include="InfluxDB.Collector" Version="1.1.0" />
     <PackageReference Include="NLog" Version="4.6.2" />
     <PackageReference Include="NLog.Config" Version="4.6.2" />
-    <PackageReference Include="NLog.Schema" Version="4.6.2" />
+    <PackageReference Include="NLog.Schema" Version="4.6.3" />
   </ItemGroup>
 
 </Project>
