@@ -7,7 +7,7 @@ using ByteSizeLib;
 using Flurl;
 using Flurl.Http;
 using InfluxDB.Collector;
-using NLog;
+using Serilog;
 
 namespace NetGearLTE
 {
@@ -15,8 +15,11 @@ namespace NetGearLTE
     {
         static void Main(string[] args)
         {
-            Logger mLogger = LogManager.GetCurrentClassLogger();
-
+           Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File("consoleapp.log")
+            .WriteTo.Console()
+            .CreateLogger();
 
             string baseUrl = "http://192.168.5.1";
             string password = "qL6rc4Eo";
@@ -24,7 +27,7 @@ namespace NetGearLTE
             NetGearLTE.Library.Client client = new Library.Client(baseUrl, password);
 
            
-            mLogger.Debug("Calling out to telegraf");
+            Log.Logger.Debug("Calling out to telegraf");
             Metrics.Collector = new CollectorConfiguration()
                 .Tag.With("host", Environment.GetEnvironmentVariable("COMPUTERNAME"))
                 .Batch.AtInterval(TimeSpan.FromSeconds(30))
@@ -38,12 +41,12 @@ namespace NetGearLTE
                 {
                     var model = client.GetModel();
 
-                    mLogger.Debug($"WANIP: {model.wwan.IP} SMS count: {model.sms.msgCount} Unread: {model.sms.unreadMsgs}");
-                    mLogger.Debug($"model.wwan.dataTransferred: {model.wwan.dataTransferred} ");
-                    mLogger.Debug($"model.wwan.dataUsage.generic.billingCycleLimit: {model.wwan.dataUsage.generic.billingCycleLimit} ");
-                    mLogger.Debug($"model.wwan.dataUsage.generic.dataTransferred: {model.wwan.dataUsage.generic.dataTransferred} ");
-                    mLogger.Debug($"model.wwan.dataTransferredTx: {model.wwan.dataTransferredTx} ");
-                    mLogger.Debug($"model.wwan.dataTransferredRx: {model.wwan.dataTransferredRx} ");
+                    Log.Logger.Debug($"WANIP: {model.wwan.IP} SMS count: {model.sms.msgCount} Unread: {model.sms.unreadMsgs}");
+                    Log.Logger.Debug($"model.wwan.dataTransferred: {model.wwan.dataTransferred} ");
+                    Log.Logger.Debug($"model.wwan.dataUsage.generic.billingCycleLimit: {model.wwan.dataUsage.generic.billingCycleLimit} ");
+                    Log.Logger.Debug($"model.wwan.dataUsage.generic.dataTransferred: {model.wwan.dataUsage.generic.dataTransferred} ");
+                    Log.Logger.Debug($"model.wwan.dataTransferredTx: {model.wwan.dataTransferredTx} ");
+                    Log.Logger.Debug($"model.wwan.dataTransferredRx: {model.wwan.dataTransferredRx} ");
 
                     long tx = long.Parse(model.wwan.dataTransferredTx);
                     long rx = long.Parse(model.wwan.dataTransferredRx);
@@ -60,7 +63,7 @@ namespace NetGearLTE
                         { "dataTransferred", model.wwan.dataUsage.generic.dataTransferred },
                         { "billingCycleRemainder", cycleRemander}
                         });
-                    mLogger.Debug("Wrote Data Trasfer Data");
+                    Log.Logger.Debug("Wrote Data Trasfer Data");
 
                     Metrics.Write("signalStrength",
                         new Dictionary<string, object>
@@ -75,13 +78,13 @@ namespace NetGearLTE
                         {"quality", model.wwanadv.radioQuality }
                         });
 
-                    mLogger.Debug("Wrote Signnal info");
+                    Log.Logger.Debug("Wrote Signnal info");
 
-                    mLogger.Debug("waiting 30 seconds");
+                    Log.Logger.Debug("waiting 30 seconds");
                 }
                 catch(Exception ex)
                 {
-                    mLogger.Error(ex, "Error when either talking to modem or writing to InfluxDB");
+                    Log.Logger.Error(ex, "Error when either talking to modem or writing to InfluxDB");
                 }
 
                 Thread.Sleep(30000);

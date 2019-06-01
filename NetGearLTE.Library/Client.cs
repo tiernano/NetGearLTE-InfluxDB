@@ -1,5 +1,5 @@
 ﻿using Flurl.Http;
-using NLog;
+using Serilog;
 using System;
 using System.Text.RegularExpressions;
 
@@ -7,19 +7,23 @@ namespace NetGearLTE.Library
 {
     public class Client
     {
-        private readonly Logger mLogger;
         private readonly IFlurlClient mFlurlClient;
 
         public Client(string BaseURL, string Password)
         {
-            mLogger = LogManager.GetCurrentClassLogger();
+            Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.File("consoleapp.log")
+            .WriteTo.Console()
+            .CreateLogger();
+
 
             mFlurlClient = new FlurlClient(BaseURL).EnableCookies().Configure(settings =>
             {
-                settings.BeforeCall = call => mLogger.Debug($"Calling Netgear Url {call.Request.RequestUri}");
-                settings.OnError = call => mLogger.Error($"Error calling Netgear: {call.RequestBody} -  {call.Exception}");
+                settings.BeforeCall = call => Log.Logger.Debug($"Calling Netgear Url {call.Request.RequestUri}");
+                settings.OnError = call => Log.Logger.Error($"Error calling Netgear: {call.RequestBody} -  {call.Exception}");
                 settings.AfterCall = call =>
-                    mLogger.Debug($"called Netgear with {call.HttpStatus} in {call.Duration}");
+                    Log.Logger.Debug($"called Netgear with {call.HttpStatus} in {call.Duration}");
             });
 
             string responce = mFlurlClient.Request().GetStringAsync().GetAwaiter().GetResult();
@@ -32,7 +36,7 @@ namespace NetGearLTE.Library
             {
 
                 string token = match.Groups[1].Value;
-                mLogger.Debug($"Got a match. found {token}");
+                Log.Logger.Debug($"Got a match. found {token}");
 
                 var result = mFlurlClient.Request("Forms/config").SetQueryParam("session.password", Password).SetQueryParam("token", token)
                     .GetAsync().GetAwaiter().GetResult();
