@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="ByteSize" Version="2.1.1" />
-    <PackageReference Include="Flurl" Version="3.0.2" />
+    <PackageReference Include="Flurl" Version="3.0.4" />
     <PackageReference Include="Flurl.Http" Version="2.4.2" />
     <PackageReference Include="InfluxDB.Collector" Version="1.1.1" />
     <PackageReference Include="Serilog" Version="2.10.0" />
