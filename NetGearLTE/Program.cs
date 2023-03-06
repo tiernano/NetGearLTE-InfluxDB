@@ -22,17 +22,17 @@ namespace NetGearLTE
             .CreateLogger();
 
             string baseUrl = "http://192.168.5.1";
-            string password = "qL6rc4Eo";
+            string password = "dmV3Ncbu";
 
             NetGearLTE.Library.Client client = new Library.Client(baseUrl, password);
 
            
             Log.Logger.Debug("Calling out to telegraf");
-            Metrics.Collector = new CollectorConfiguration()
-                .Tag.With("host", Environment.GetEnvironmentVariable("COMPUTERNAME"))
-                .Batch.AtInterval(TimeSpan.FromSeconds(30))
-                .WriteTo.InfluxDB("http://192.168.1.119:8086", "telegraf")
-                .CreateCollector();               
+            //Metrics.Collector = new CollectorConfiguration()
+            //    .Tag.With("host", Environment.GetEnvironmentVariable("COMPUTERNAME"))
+            //    .Batch.AtInterval(TimeSpan.FromSeconds(30))
+            //    .WriteTo.InfluxDB("http://192.168.1.119:8086", "telegraf")
+            //    .CreateCollector();               
 
 
             while (true)

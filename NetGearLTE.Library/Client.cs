@@ -8,6 +8,7 @@ namespace NetGearLTE.Library
     public class Client
     {
         private readonly IFlurlClient mFlurlClient;
+        private CookieJar jar;
 
         public Client(string BaseURL, string Password)
         {
@@ -17,18 +18,18 @@ namespace NetGearLTE.Library
             .WriteTo.Console()
             .CreateLogger();
 
-            var jar = new CookieJar();
+  
 
             mFlurlClient = new FlurlClient(BaseURL).Configure(settings =>
             {
-                settings.BeforeCall = call => Log.Logger.Debug($"Calling Netgear Url {call.Request.RequestUri}");
+                settings.BeforeCall = call => Log.Logger.Debug($"Calling Netgear Url {call.Request.Url}");
                 settings.OnError = call => Log.Logger.Error($"Error calling Netgear: {call.RequestBody} -  {call.Exception}");
                 settings.AfterCall = call =>
-                    Log.Logger.Debug($"called Netgear with {call.HttpStatus} in {call.Duration}");
-                settings.WithCookies(out var jar);
+                    Log.Logger.Debug($"called Netgear with {call.Response.StatusCode} in {call.Duration}");
+                //settings.WithCookies(out var jar);
             });
 
-            string response = mFlurlClient.Request().GetStringAsync().GetAwaiter().GetResult();
+            string response = mFlurlClient.Request().WithCookies(out jar).GetStringAsync().GetAwaiter().GetResult();
 
             Regex regex = new Regex("name=\"token\" value=\"(.*?)\"");
 
@@ -36,11 +37,10 @@ namespace NetGearLTE.Library
 
             if (match.Success)
             {
-
                 string token = match.Groups[1].Value;
                 Log.Logger.Debug($"Got a match. found {token}");
 
-                var result = mFlurlClient.Request("Forms/config").SetQueryParam("session.password", Password).SetQueryParam("token", token)
+                var result = mFlurlClient.Request("Forms/config").WithCookies(jar).SetQueryParam("session.password", Password).SetQueryParam("token", token)
                     .GetAsync().GetAwaiter().GetResult();
 
             }
@@ -52,7 +52,7 @@ namespace NetGearLTE.Library
 
         public Model GetModel()
         {
-            return mFlurlClient.Request("/api/model.json").SetQueryParam("internalapi", "1").GetJsonAsync<Model>().GetAwaiter().GetResult();
+            return mFlurlClient.Request("/api/model.json").WithCookies(jar).SetQueryParam("internalapi", "1").GetJsonAsync<Model>().GetAwaiter().GetResult();
         }
     }
 }
