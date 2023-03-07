@@ -8,6 +8,8 @@ using Flurl;
 using Flurl.Http;
 using InfluxDB.Collector;
 using Serilog;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace NetGearLTE
 {
@@ -15,24 +17,30 @@ namespace NetGearLTE
     {
         static void Main(string[] args)
         {
-           Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .WriteTo.File("consoleapp.log")
-            .WriteTo.Console()
-            .CreateLogger();
+            IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables().Build();
 
-            string baseUrl = "http://192.168.5.1";
-            string password = "qL6rc4Eo";
+            Settings settings = config.GetRequiredSection("Settings").Get<Settings>();
+
+
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File("consoleapp.log")
+                .WriteTo.Console()
+                .CreateLogger();
+
+            string baseUrl = settings.netgear.url;
+            string password = settings.netgear.password;
 
             NetGearLTE.Library.Client client = new Library.Client(baseUrl, password);
 
-           
+
             Log.Logger.Debug("Calling out to telegraf");
             Metrics.Collector = new CollectorConfiguration()
                 .Tag.With("host", Environment.GetEnvironmentVariable("COMPUTERNAME"))
                 .Batch.AtInterval(TimeSpan.FromSeconds(30))
-                .WriteTo.InfluxDB("http://192.168.1.119:8086", "telegraf")
-                .CreateCollector();               
+                .WriteTo.InfluxDB(settings.influxdb.url, settings.influxdb.database)
+                .CreateCollector();
 
 
             while (true)
@@ -82,7 +90,7 @@ namespace NetGearLTE
 
                     Log.Logger.Debug("waiting 30 seconds");
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log.Logger.Error(ex, "Error when either talking to modem or writing to InfluxDB");
                 }
@@ -92,4 +100,24 @@ namespace NetGearLTE
             }
         }
     }
+
+
+    public class Settings
+    {
+        public Netgear netgear { get; set; }
+        public Influxdb influxdb { get; set; }
+    }
+
+    public class Netgear
+    {
+        public string url { get; set; }
+        public string password { get; set; }
+    }
+
+    public class Influxdb
+    {
+        public string url { get; set; }
+        public string database { get; set; }
+    }
+
 }
