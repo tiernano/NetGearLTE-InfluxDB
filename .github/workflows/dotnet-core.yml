@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: buildjet/cache@v3
     - uses: actions/checkout@v3
     - name: Setup .NET Core
       uses: buildjet/setup-dotnet@v3
