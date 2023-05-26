@@ -13,6 +13,11 @@ jobs:
 
     steps:
     - uses: buildjet/cache@v3
+      with:
+        path: ${{ env.DOTNET_INSTALL_DIR }}
+        key: ${{ runner.os }}-dotnet-7
+        restore-keys: ${{ runner.os }}-dotnet-7
+      
     - uses: actions/checkout@v3
     - name: Setup .NET Core
       uses: buildjet/setup-dotnet@v3
