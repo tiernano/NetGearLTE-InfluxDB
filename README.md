@@ -3,7 +3,7 @@
 A small .NET core application that queries a Netgear LTE Modem (tested on a [LB2120](https://www.netgear.ie/home/products/mobile-broadband/lte-modems/LB2120.aspx), but may work on others). 
 It gets the following info and puts it into [InfluxDB](https://www.influxdata.com/):
 
-
+ 
 ## Bandwidth details
 
 * "tx", wwan.dataTransferredTx },
