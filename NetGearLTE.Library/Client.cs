@@ -18,16 +18,16 @@ namespace NetGearLTE.Library
             .WriteTo.Console()
             .CreateLogger();
 
-  
+            mFlurlClient = new FlurlClient(BaseURL);
+            mFlurlClient.WithHeader("Content-Type", "application/x-www-form-urlencoded");
+            mFlurlClient.WithHeader("Accept", "application/json");
 
-            mFlurlClient = new FlurlClient(BaseURL).Configure(settings =>
-            {
-                settings.BeforeCall = call => Log.Logger.Debug($"Calling Netgear Url {call.Request.Url}");
-                settings.OnError = call => Log.Logger.Error($"Error calling Netgear: {call.RequestBody} -  {call.Exception}");
-                settings.AfterCall = call =>
-                    Log.Logger.Debug($"called Netgear with {call.Response.StatusCode} in {call.Duration}");
-                //settings.WithCookies(out var jar);
-            });
+            mFlurlClient.BeforeCall(call => Log.Logger.Debug($"Calling Netgear Url {call.Request.Url}"));
+            mFlurlClient.OnError(call =>
+                Log.Logger.Error($"Error calling Netgear: {call.RequestBody} -  {call.Exception}"));
+            mFlurlClient.AfterCall(call =>
+                Log.Logger.Debug($"called Netgear with {call.Response.StatusCode} in {call.Duration}"));
+             
 
             string response = mFlurlClient.Request().WithCookies(out jar).GetStringAsync().GetAwaiter().GetResult();
 

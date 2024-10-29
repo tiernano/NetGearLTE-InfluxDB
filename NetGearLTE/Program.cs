@@ -98,7 +98,10 @@ namespace NetGearLTE
                 Thread.Sleep(30000);
 
             }
+
         }
+        
+
     }
 
 
