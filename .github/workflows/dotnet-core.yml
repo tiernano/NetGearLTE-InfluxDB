@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: buildjet/cache@v3
+    - uses: actions/cache@v3
       with:
         path: ~/.nuget/packages
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
@@ -21,12 +21,13 @@ jobs:
       
     - uses: actions/checkout@v3
     - name: Setup .NET Core
+      # Using buildjet/setup-dotnet@v3 instead of actions/setup-dotnet@v2 for specific reasons
       uses: buildjet/setup-dotnet@v3
       with:
-        dotnet-version: '7.0'
+        dotnet-version: '8.0.x'
     - name: Install dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --no-restore --verbosity minimal
