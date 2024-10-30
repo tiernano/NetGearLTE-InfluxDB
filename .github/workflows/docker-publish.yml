@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Publish Workflow
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -7,15 +7,17 @@ name: Docker
 
 on:
   schedule:
+    # Runs at 21:35 UTC every day
     - cron: '35 21 * * *'
   push:
     branches: [ "master" ]
     # Publish semver tags as releases.
+    # The pattern 'v*.*.*' matches tags following semantic versioning (e.g., v1.0.0).
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "master" ]
 
-env:
+  # Set to docker.io if you are using Docker Hub as the registry
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
@@ -51,7 +53,7 @@ jobs:
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
+      - name: Authenticate to Docker registry ${{ env.REGISTRY }}
         if: github.event_name != 'pull_request'
         uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
         with:
@@ -92,4 +94,8 @@ jobs:
           COSIGN_EXPERIMENTAL: "true"
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+        run: |
+          # Extract tags from metadata output
+          echo "${{ steps.meta.outputs.tags }}" \
+          # Use xargs to iterate over each tag and sign the image
+          | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
